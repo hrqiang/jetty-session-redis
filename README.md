@@ -1,3 +1,7 @@
+## Ruiqiang Huang 
+Fixed Jedis pool based on commons-pool library.
+Port to Jetty9.1
+
 # Jetty session clustering with REDIS
 
 * [REDIS website](http://redis.io/) (tested on version 2.2.1)

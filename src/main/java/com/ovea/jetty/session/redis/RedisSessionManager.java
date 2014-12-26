@@ -24,6 +24,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.TransactionBlock;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.Pool;
 
 import javax.naming.InitialContext;
 import javax.servlet.http.HttpServletRequest;
@@ -45,7 +46,7 @@ public final class RedisSessionManager extends SessionManagerSkeleton<RedisSessi
 
     private long saveIntervalSec = 20; //only persist changes to session access times every 20 secs
 
-    public RedisSessionManager(JedisPool jedisPool) {
+    public RedisSessionManager(Pool<Jedis> jedisPool) {
         this(jedisPool, new XStreamSerializer());
     }
 
@@ -53,7 +54,7 @@ public final class RedisSessionManager extends SessionManagerSkeleton<RedisSessi
         this(jndiName, new XStreamSerializer());
     }
 
-    public RedisSessionManager(JedisPool jedisPool, Serializer serializer) {
+    public RedisSessionManager(Pool<Jedis> jedisPool, Serializer serializer) {
         this.serializer = serializer;
         this.jedisExecutor = new PooledJedisExecutor(jedisPool);
     }
@@ -93,6 +94,11 @@ public final class RedisSessionManager extends SessionManagerSkeleton<RedisSessi
     public void doStop() throws Exception {
         super.doStop();
         serializer.stop();
+    }
+
+    @Override
+    protected void shutdownSessions() throws Exception {
+
     }
 
     @Override

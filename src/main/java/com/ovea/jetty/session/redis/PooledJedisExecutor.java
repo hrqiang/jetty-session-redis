@@ -17,15 +17,17 @@ package com.ovea.jetty.session.redis;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.Pool;
 
 /**
  * @author Mathieu Carbou (mathieu.carbou@gmail.com)
  */
 class PooledJedisExecutor implements JedisExecutor {
-    private final JedisPool jedisPool;
+    private final Pool<Jedis> jedisPool;
 
-    PooledJedisExecutor(JedisPool jedisPool) {
+    PooledJedisExecutor(Pool<Jedis> jedisPool) {
         this.jedisPool = jedisPool;
     }
 
@@ -34,11 +36,18 @@ class PooledJedisExecutor implements JedisExecutor {
         Jedis jedis = jedisPool.getResource();
         try {
             return cb.execute(jedis);
-        } catch (JedisException e) {
-            jedisPool.returnBrokenResource(jedis);
+        } catch (JedisConnectionException e) {
+            // returnBrokenResource cannot return again.
+            // Refer http://commons.apache.org/proper/commons-pool/api-1.6/org/apache/commons/pool/ObjectPool.html
+            if (jedis != null) {
+                jedisPool.returnBrokenResource(jedis);
+                jedis = null;
+            }
             throw e;
         } finally {
-            jedisPool.returnResource(jedis);
+            if (jedis != null) {
+                jedisPool.returnResource(jedis);
+            }
         }
     }
 

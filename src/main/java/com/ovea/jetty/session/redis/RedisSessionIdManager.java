@@ -16,15 +16,22 @@
 package com.ovea.jetty.session.redis;
 
 import com.ovea.jetty.session.SessionIdManagerSkeleton;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.SessionManager;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.session.JDBCSessionManager;
+import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.log.Logger;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.TransactionBlock;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.Pool;
 
 import javax.naming.InitialContext;
+import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,7 +48,7 @@ public final class RedisSessionIdManager extends SessionIdManagerSkeleton {
 
     private final JedisExecutor jedisExecutor;
 
-    public RedisSessionIdManager(Server server, JedisPool jedisPool) {
+    public RedisSessionIdManager(Server server, Pool<Jedis> jedisPool) {
         super(server);
         this.jedisExecutor = new PooledJedisExecutor(jedisPool);
     }
@@ -121,4 +128,11 @@ public final class RedisSessionIdManager extends SessionIdManagerSkeleton {
         return expired;
     }
 
+    @Override
+    /**
+     * TODO: implement renewSessionId on servlet API 3
+     */
+    public void renewSessionId(String s, String s1, HttpServletRequest httpServletRequest) {
+
+    }
 }
